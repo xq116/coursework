@@ -1,0 +1,83 @@
+% ----
+% COMP1204 CW1 Report Document
+% ----
+\documentclass[]{article}
+\usepackage{courier}
+\usepackage{minted}
+\usepackage{graphicx}
+
+\usepackage[margin=1in]{geometry}
+\setlength\parindent{0pt}
+
+\title{COMP1204: Data Management \\ Coursework One: Hurricane Monitoring }
+\author{student name: Zhenyang,Qin \\ student id: 34259686}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This work aims to extract useful storm data from a set of hurricane reports. The tag structure in these report is similar to XML file. Without using an XML parser,the data of a single storm is filtered and grouped by using regular expressions and Unix. Export multiple reports that are originally lengthy and contain many additional information into a file with a data format of CSV.This file only contain important information.
+
+{\parskip=7pt
+According to the time and coordinates provided in the data,the moving path of the storm can be drawn,and the storm plots can be obtained.The extracted data is exported in CSV format. Storm plots are generated as PNG files
+from the CSV output using the provided create\_map\_plot.sh script.}
+
+\section{Create CSV Script}
+
+\begin{minted}[linenos]{bash}
+#!/bin/bash
+
+# 1 Set 2 varialbes to extract data from KML,and save as CSV
+
+kml_input=$1
+csv_output=$2
+
+#   Set the first line of output file
+echo "Timestamp,Latitude,Longitude,MinSeaLevelPressure,MaxIntensity" > $2
+
+# 2 Collect the 5 required data
+# 	Cut off useless parts then add unit at the end of each line
+
+#   grep timestamp
+grep "<dtg>" $1 | cut -d ">" -f 2 | cut -d "<" -f 1 > ts.txt
+
+#   grep latitude
+grep "<lat>" $1 | cut -d ">" -f 2 | cut -d "<" -f 1 \
+    |  sed "s/$/& N/g" >lat.txt
+
+#   grep longitude
+grep "<lon>" $1 | cut -d ">" -f 2 | cut -d "<" -f 1 \
+    | sed "s/$/& W/g" > lon.txt
+
+#   grep max intensity
+grep "<intensity>" $1 | cut -d ">" -f 2 | cut -d "<" -f 1 \
+    | sed "s/$/& knots/g" > inten.txt
+
+#   grep min sealevel pressure
+grep "<minSea.*>" $1 | cut -d ">" -f 2 | cut -d "<" -f 1 \
+    | sed "s/$/& mb/g" > press.txt
+
+# 3 Paste data in order, output final data as a CSV file
+paste -d ',' ts.txt lat.txt lon.txt press.txt inten.txt >>$2
+\end{minted}
+
+\section{Storm Plots}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.67]{storm plot1.jpg}
+    \caption{}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.5]{storm plot2.jpg}
+    \caption{}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.5]{storm plot3.jpg}
+    \caption{}
+\end{figure}
+\section{Git}
+\end{document}
